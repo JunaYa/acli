@@ -1,4 +1,4 @@
-# Geektime Rust 语言训练营
+# Rust cli
 
 ## 环境设置
 
@@ -26,19 +26,6 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 - vscode-icons: 图标优化
 - YAML: YAML 文件支持
 
-### 安装 cargo generate
-
-cargo generate 是一个用于生成项目模板的工具。它可以使用已有的 github repo 作为模版生成新的项目。
-
-```bash
-cargo install cargo-generate
-```
-
-在我们的课程中，新的项目会使用 `tyr-rust-bootcamp/template` 模版生成基本的代码：
-
-```bash
-cargo generate tyr-rust-bootcamp/template
-```
 
 ### 安装 pre-commit
 
