@@ -1,4 +1,4 @@
-use acli::{process_csv, Opts, SubCommand};
+use acli::{process_csv, process_genpass, Opts, SubCommand};
 use clap::Parser;
 
 fn main() -> anyhow::Result<()> {
@@ -11,6 +11,16 @@ fn main() -> anyhow::Result<()> {
                 format!("output.{}", csv_opts.format)
             };
             process_csv(&csv_opts.input, outout, csv_opts.format)?;
+        }
+        SubCommand::GenPass(genpass_opts) => {
+            println!("Generate password: {:?}", genpass_opts);
+            process_genpass(
+                genpass_opts.length,
+                genpass_opts.uppercase,
+                genpass_opts.lowercase,
+                genpass_opts.number,
+                genpass_opts.symbol,
+            )?;
         }
     }
     Ok(())
