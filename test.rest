@@ -4,3 +4,9 @@ GET http://localhost:8080/
 
 ### Test fixtures/blake3.txt
 GET http://localhost:8080/fixtures/blake3.txt
+
+### Test tower-http
+GET http://localhost:8080/Cargo.toml
+
+### 
+GET http://localhost:8080/tower/fixtures/blake3.txt
