@@ -26,7 +26,6 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 - vscode-icons: 图标优化
 - YAML: YAML 文件支持
 
-
 ### 安装 pre-commit
 
 pre-commit 是一个代码检查工具，可以在提交代码前进行代码检查。
@@ -67,4 +66,14 @@ cargo nextest 是一个 Rust 增强测试工具。
 
 ```bash
 cargo install cargo-nextest --locked
+```
+
+# 运行
+
+```
+cargo nextest --
+```
+
+```
+cargo run -- text sign -k fixtures/ed25519.sk --format ed25519
 ```
