@@ -2,12 +2,14 @@ use std::{fmt, fs, path::PathBuf, str::FromStr};
 
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use clap::Parser;
+use enum_dispatch::enum_dispatch;
 
 use crate::CmdExector;
 
 use super::{verify_input, verify_path};
 
 #[derive(Debug, Parser)]
+#[enum_dispatch(CmdExector)]
 pub enum TextSubCommand {
     #[command(about = "Sign a text with a private/shared key")]
     Sign(TextSignOpts),
@@ -117,15 +119,5 @@ impl CmdExector for KeyGenerateOpts {
             let _ = fs::write(self.output_path.join(k), v);
         }
         Ok(())
-    }
-}
-
-impl CmdExector for TextSubCommand {
-    async fn execute(self) -> anyhow::Result<()> {
-        match self {
-            TextSubCommand::Sign(opts) => opts.execute().await,
-            TextSubCommand::Verify(opts) => opts.execute().await,
-            TextSubCommand::Generate(opts) => opts.execute().await,
-        }
     }
 }
