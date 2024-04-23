@@ -71,9 +71,14 @@ cargo install cargo-nextest --locked
 # 运行
 
 ```
-cargo nextest --
+cargo nextest -- <fn name>
 ```
 
 ```
 cargo run -- text sign -k fixtures/ed25519.sk --format ed25519
+```
+
+// 安装
+```
+cargo install --path .
 ```

@@ -1,6 +1,9 @@
+use anyhow::Ok;
 use clap::Parser;
 use core::fmt;
 use std::str::FromStr;
+
+use crate::CmdExector;
 
 use super::verify_input;
 
@@ -61,5 +64,17 @@ impl fmt::Display for OutputFormat {
         //     OutputFormat::Toml => "toml",
         // })
         write!(f, "{}", Into::<&str>::into(*self))
+    }
+}
+
+impl CmdExector for CsvOpts {
+    async fn execute(self) -> anyhow::Result<()> {
+        let outout = if let Some(output) = &self.output {
+            output.clone()
+        } else {
+            format!("output.{}", self.format)
+        };
+        crate::process_csv(&self.input, outout, self.format)?;
+        Ok(())
     }
 }
