@@ -68,17 +68,28 @@ cargo nextest 是一个 Rust 增强测试工具。
 cargo install cargo-nextest --locked
 ```
 
-# 运行
+# 运行测试
 
 ```
 cargo nextest -- <fn name>
+```
+
+// 运行安装 acli
+
+```
+cargo install --path .
 ```
 
 ```
 cargo run -- text sign -k fixtures/ed25519.sk --format ed25519
 ```
 
-// 安装
-```
-cargo install --path .
-```
+## jwt
+  
+  ```bash
+  # 生成 jwt
+  acli jwt sign --sub acme --aud device1 --exp 14d
+
+  # 验证 jwt
+  acli jwt verify -t <token-value>
+  ···
