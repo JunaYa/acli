@@ -14,10 +14,15 @@ pub fn process_jwt_encode(sub: String, aud: String, exp: u64) -> Result<String> 
 }
 
 pub fn process_jwt_decode(token: &str) -> Result<Claims> {
+    let mut validation = Validation::new(Algorithm::HS256);
+
+    // 要设置验证过期时间 但是不验证目标
+    validation.validate_aud = false;
+    validation.validate_exp = true;
     let token_data = decode::<Claims>(
         &token,
         &DecodingKey::from_secret(SECRET.as_ref()),
-        &Validation::new(Algorithm::HS256),
+        &validation,
     )?;
     Ok(token_data.claims)
 }
@@ -25,21 +30,21 @@ pub fn process_jwt_decode(token: &str) -> Result<Claims> {
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Claims {
     sub: String,
-    // aud: String,
+    aud: String,
     exp: u64,
 }
 
 impl Claims {
     pub fn new(sub: String, aud: String, exp: u64) -> Self {
         // normalize the timestamps by stripping of microseconds
-        Self { sub, exp }
+        Self { sub, aud, exp }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    const EXPECTED_TOKEN: &str = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhcmp1bkBhLmNvbSIsImV4cCI6MTAwMDAwMDAwMDB9.ufkQNIeUyyBUocxDY05JnnCZmiU4mgn_pMjjootZ99c";
+    const EXPECTED_TOKEN: &str = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhcmp1bkBhLmNvbSIsImF1ZCI6ImRldmljZTEiLCJleHAiOjEwMDAwMDAwMDAwfQ.aWltfQbbIF5sArVSZjNFPU-qeUS77E4b9AEahmeXlV8";
 
     use super::Claims;
 
