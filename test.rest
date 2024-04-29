@@ -10,3 +10,9 @@ GET http://localhost:8080/Cargo.toml
 
 ### 
 GET http://localhost:8080/tower/fixtures/blake3.txt
+
+### 文件目录调用1
+GET http://localhost:8080/fixtures
+
+### 文件目录调用2
+GET http://localhost:8080/src

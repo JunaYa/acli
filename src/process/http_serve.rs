@@ -43,6 +43,23 @@ async fn file_handler(
             format!("File {} not found", p.display()),
         )
     } else {
+        if p.is_dir() {
+            let dirs = visit_dir(&p);
+            match dirs {
+                Ok(mut files) => {
+                    files.insert(0, format!("{}", p.display()));
+                    let content = files.join("\n");
+                    info!("Read {} files", files.len());
+                    return (StatusCode::OK, content);
+                }
+                Err(_) => {
+                    return (
+                        StatusCode::INTERNAL_SERVER_ERROR,
+                        format!("Error reading directory: {}", p.display()),
+                    );
+                }
+            }
+        }
         match tokio::fs::read_to_string(p).await {
             Ok(content) => {
                 info!("Read {} bytes", content.len());
@@ -54,6 +71,23 @@ async fn file_handler(
             }
         }
     }
+}
+
+// Visit a directory and return a list of files
+fn visit_dir(dir: &PathBuf) -> Result<Vec<String>> {
+    let mut files = vec![];
+    for entry in std::fs::read_dir(dir)? {
+        let entry = entry?;
+        let path = entry.path();
+
+        if path.is_dir() {
+            files.push(format!("{}", path.display()));
+            files.append(&mut visit_dir(&path)?);
+        } else {
+            files.push(format!("{}", path.display()));
+        }
+    }
+    Ok(files)
 }
 
 #[cfg(test)]
