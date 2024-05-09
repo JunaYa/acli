@@ -2,8 +2,11 @@ use std::{collections::HashMap, io::Read};
 
 use crate::{process_genpass, TextSignFormat};
 use anyhow::Result;
+use chacha20poly1305::{
+    aead::{Aead, AeadCore, KeyInit, OsRng},
+    XChaCha20Poly1305,
+};
 use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
-use rand::rngs::OsRng;
 
 trait TextSigner {
     fn sign(&self, reader: &mut dyn Read) -> Result<Vec<u8>>;
@@ -143,6 +146,38 @@ pub fn process_text_key_generate(format: TextSignFormat) -> Result<HashMap<&'sta
     match format {
         TextSignFormat::Blake3 => Blake3::generate(),
         TextSignFormat::Ed25519 => Ed25519Signer::generate(),
+    }
+}
+
+pub fn process_text_encrypt(reader: &mut dyn Read, key: &[u8]) -> Result<Vec<u8>> {
+    let mut buf = Vec::new();
+    reader.read_to_end(&mut buf)?;
+    let key = (&key[..32]).try_into()?;
+    let cipher = XChaCha20Poly1305::new(key);
+    let nonce = XChaCha20Poly1305::generate_nonce(&mut rand::rngs::OsRng);
+    match cipher.encrypt(&nonce, buf.as_slice().as_ref()) {
+        Ok(ciphertext) => {
+            let mut nonce_and_ciphertext = Vec::new();
+            nonce_and_ciphertext.extend_from_slice(&nonce);
+            nonce_and_ciphertext.extend(&ciphertext);
+
+            Ok(nonce_and_ciphertext)
+        }
+        _ => Err(anyhow::anyhow!("Failed to encrypt")),
+    }
+}
+
+pub fn process_text_decrypt(reader: &mut dyn Read, key: &[u8]) -> Result<Vec<u8>> {
+    let mut buf = Vec::new();
+    reader.read_to_end(&mut buf)?;
+    let key = (&key[..32]).try_into()?;
+    let cipher = XChaCha20Poly1305::new(key);
+    let nonce_and_ciphertext = &buf[..24];
+    let nonce = &nonce_and_ciphertext[..24];
+    let ciphertext = &nonce_and_ciphertext[24..];
+    match cipher.decrypt(nonce.into(), ciphertext) {
+        Ok(plaintext) => Ok(plaintext),
+        _ => Err(anyhow::anyhow!("Failed to decrypt")),
     }
 }
 

@@ -17,6 +17,10 @@ pub enum TextSubCommand {
     Verify(TextVerifyOpts),
     #[command(about = "Generate a key pair")]
     Generate(KeyGenerateOpts),
+    #[command(about = "Encrypt a text")]
+    Encrypt(EncryptOpts),
+    #[command(about = "Decrypt a text")]
+    Decrypt(DecryptOpts),
 }
 
 #[derive(Debug, Parser)]
@@ -39,6 +43,22 @@ pub struct TextVerifyOpts {
     pub signature: String,
     #[arg(long, value_parser = parse_text_sign_format, default_value = "blake3")]
     pub format: TextSignFormat,
+}
+
+#[derive(Debug, Parser)]
+pub struct EncryptOpts {
+    #[arg(short, long, value_parser = verify_input, default_value = "-")]
+    pub input: String,
+    #[arg(short, long, value_parser = verify_input)]
+    pub key: String,
+}
+
+#[derive(Debug, Parser)]
+pub struct DecryptOpts {
+    #[arg(short, long, value_parser = verify_input, default_value = "-")]
+    pub input: String,
+    #[arg(short, long, value_parser = verify_input)]
+    pub key: String,
 }
 
 #[derive(Debug, Parser)]
@@ -118,6 +138,28 @@ impl CmdExector for KeyGenerateOpts {
         for (k, v) in key {
             let _ = fs::write(self.output_path.join(k), v);
         }
+        Ok(())
+    }
+}
+
+impl CmdExector for EncryptOpts {
+    async fn execute(self) -> anyhow::Result<()> {
+        let mut reader = crate::get_reader(&self.input)?;
+        let key = crate::get_content(&self.key)?;
+        let encrypted = crate::process_text_encrypt(&mut reader, &key)?;
+        let encoded = URL_SAFE_NO_PAD.encode(encrypted);
+        println!("{}", encoded);
+        Ok(())
+    }
+}
+
+impl CmdExector for DecryptOpts {
+    async fn execute(self) -> anyhow::Result<()> {
+        let input: Vec<u8> = crate::get_content(&self.input)?;
+        let encrypted = URL_SAFE_NO_PAD.decode(input)?;
+        let key: Vec<u8> = crate::get_content(&self.key)?;
+        let decrypted = crate::process_text_decrypt(&mut encrypted.as_slice(), &key)?;
+        println!("{}", String::from_utf8_lossy(&decrypted));
         Ok(())
     }
 }
